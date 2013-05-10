@@ -1,4 +1,4 @@
-(ns docroutes
+(ns doc-routes.core
   (:use [clojure.tools.macro :only (name-with-attributes)]
         [compojure.core]
         [hiccup.core]
@@ -75,6 +75,11 @@
     (pprint routes)
    `(def ~name (routes ~@routes))))
 
+
+;; Sample
+;;(doc-routes app 
+;;            (GET "/foo/bar" [id foo bar] {:body "Foobar!"})
+;;            (GET "/foo/baz" [id foo baz] {:body "Foobaz!"}))
 
 
 ;;; docstring parsing 
