@@ -1,0 +1,81 @@
+<html>
+  <head>
+    <title>docroutes</title>
+    <link href="../resources/bootstrap.css" rel="stylesheet">
+    <script src="../resources/bootstrap.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1 id="api-name">Order API</h1>
+      <div class="article">
+        <h2 id="service-name">Creating an order</h2>
+        <p class="explanation" id="service-explanation">
+          First, create an order, then make a later request to get it back
+        </p>
+        <h3>Parameters</h3>
+        <table class="parameters">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- move this to a separate template, row per param -->
+            <tr class="parameter">
+              <td>
+                <span class="name" id="param-name">name</span>
+              </td>
+              <td>
+                <span class="description" id="param-desc">Name of order</span>
+              </td>
+            </tr>
+            <!-- end param template -->
+          </tbody>
+        </table>
+        <!-- probably make this a template as well, per GET/POST/etc -->
+        <div class="request" id="request-0">
+          <h3>Request</h3>
+          <section class="request-headers">
+            <h4>Headers</h4>
+            <!-- this can be static for now, just make it correct -->
+            <pre class="headers">Accept: application/json&#x000A;Content-Type: application/json&#x000A;Host: example.org&#x000A;Cookie: &#x000A;</pre>
+          </section>
+          <section class="route">
+            <h4>Route</h4>
+            <pre class="route highlight" id="route">POST /orders</pre>
+          </section>
+          <section class="body">
+            <h4>Body</h4>
+            <div class="content" data-content-type="application/json">
+              <textarea id="request-body">{"order":{"name":"Order 1","paid":true,"email":"email@example.com"}}</textarea>
+            </div>
+          </section>
+          <section class="curl">
+            <h4>cURL</h4>
+            <pre id="curl">curl "http://rad-example.herokuapp.com/orders" -d "{"order":{"name":"Order 1","paid":true,"email":"email@example.com"}}" -X POST \&#x000A; -H "Accept: application/json" \&#x000A; -H "Content-Type: application/json" \&#x000A; -H "Host: example.org" \&#x000A;  -H "Cookie: "</pre>
+          </section>
+          <div class="response">
+            <h3>Response</h3>
+            <section class="headers">
+              <h4>Headers</h4>
+              <pre class="headers" id="response-headers">Content-Type: application/json; charset=utf-8&#x000A;Location: http://example.org/orders/255&#x000A;X-UA-Compatible: IE=Edge,chrome=1&#x000A;ETag: "5fffd66f61cdd4ab8881584dbf5e72cf"&#x000A;Cache-Control: max-age=0, private, must-revalidate&#x000A;X-Request-Id: 17248c7d5bd3d4c45263da4acdae7781&#x000A;X-Runtime: 0.008309&#x000A;Content-Length: 58&#x000A;</pre>
+            </section>
+            <section class="status">
+              <h4>Status</h4>
+              <pre class="status" id="response-status">201</pre>
+            </section>
+            <section class="body">
+              <h4>Body</h4>
+              <div class="content" data-content-type="application/json; charset=utf-8">
+                <textarea id="response-body">{"email":"email@example.com","name":"Order 1","paid":true}</textarea>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+

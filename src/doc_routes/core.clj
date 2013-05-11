@@ -2,21 +2,30 @@
   (:use [clojure.tools.macro :only (name-with-attributes)]
         [compojure.core]
         [hiccup.core]
-        [clojure.pprint :only (pprint)]))
+        [clojure.pprint :only (pprint)])
+  (:require [net.cgrand.enlive-html :as enlive]))
+
+;; Need ../resources, since the root is ./src
+(enlive/deftemplate doc-page "../resources/template.html"
+  [route-map]
+  [:pre#route] (enlive/content (str (:method route-map) " "
+                                    (:route route-map))))
 
 (defn make-doc-page
   "doc me"
   [route-maps]
   ;; (let [{:keys [method route params doc body]} route-map])
   (prn [:route-map route-maps])
-  ;; (html [:h1 route]
-  ;;       [:h2 "Params: " params]
-  ;;       [:p doc]
-  ;;       [:br]
-  ;;       [:h3 "src"]
-  ;;       [:p body])
-  :foo
-  )
+
+  ;; For testing, just use the first item in the map to create some basic 
+  ;; doc pages, then work on creating doc pages w/ multiple routes
+  (let [route-map (nth route-maps 0)
+        filename (.replace (:route route-map) "/" "-")
+        filename (str "output/" filename ".html")
+        doc-page-str (reduce str (doc-page route-map))]
+    (spit filename doc-page-str))
+
+  :foo)
 
 (defn document-routes [route-forms]
   (let [routes (for [[method route params doc & body :as form] route-forms
@@ -79,7 +88,8 @@
 ;; Sample
 ;;(doc-routes app 
 ;;            (GET "/foo/bar" [id foo bar] {:body "Foobar!"})
-;;            (GET "/foo/baz" [id foo baz] {:body "Foobaz!"}))
+;;            (GET "/foo/baz" [id foo baz] {:body "Foobaz!"})
+;;            (POST "/foo/baz" [id foo baz] {:body "Foobaz!"}))
 
 
 ;;; docstring parsing 
