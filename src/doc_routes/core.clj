@@ -3,7 +3,8 @@
         [compojure.core]
         [hiccup.core]
         [clojure.pprint :only (pprint)])
-  (:require [net.cgrand.enlive-html :as enlive]))
+  (:require [net.cgrand.enlive-html :as enlive]
+            [clj-http.client :as client]))
 
 ;; For template/snippets we need ../resources, since the root is ./src
 
@@ -16,14 +17,13 @@
   [:#param-desc] (enlive/content (str param-desc)))
 
 (enlive/deftemplate doc-page "../resources/template.html"
-  [{:keys [method route doc]}]
+  [{:keys [method route response-body response-status doc]}]
   [:#route] (enlive/content (str method " " route))
   [:#service-name] (enlive/content (:service-name doc))
   [:#service-desc] (enlive/content (:does doc))
   [:#request-body] (enlive/content (:request-body doc))
-  ;Will fail unless you've got the route from the sample.
-  ;[:#response-body] (enlive/content (slurp (str "http://localhost:2000"
-  ;                                              route "?" (:curl doc))))
+  [:#response-body] (enlive/content response-body)
+  [:#response-status] (enlive/content (str response-status))
   [:#curl] (enlive/content (str "curl http://<host>" route "?" (:curl doc)))
   [:#param-rows] (enlive/html-content (->>
                                         doc
@@ -44,6 +44,14 @@
   (let [;; For testing, just use the first item in the map to create some basic 
         ;; doc pages, then work on creating doc pages w/ multiple routes
         route-map (nth route-maps 0)
+
+        ;; Will fail unless you've got the route from the sample.
+        ;test-url (str "http://localhost:2000" (:route route-map) "?" 
+        ;              (-> route-map :doc :curl))
+        ;test-response (client/get test-url)
+        ;route-map (merge route-map {:response-body (:body test-response)
+        ;                            :response-status (:status test-response)})
+
         filename (.replace (:route route-map) "/" "-")
         filename (str "output/" filename ".html")
         doc-page-str (reduce str (doc-page route-map))]
