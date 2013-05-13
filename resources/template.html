@@ -6,10 +6,10 @@
   </head>
   <body>
     <div class="container">
-      <h1 id="api-name">Order API</h1>
+      <h1 id="api-name">Reviews API</h1>
       <div class="article">
         <h2 id="service-name">Creating an order</h2>
-        <p class="explanation" id="service-explanation">
+        <p class="explanation" id="service-desc">
           First, create an order, then make a later request to get it back
         </p>
         <h3>Parameters</h3>
@@ -20,17 +20,7 @@
               <th>Description</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- move this to a separate template, row per param -->
-            <tr class="parameter">
-              <td>
-                <span class="name" id="param-name">name</span>
-              </td>
-              <td>
-                <span class="description" id="param-desc">Name of order</span>
-              </td>
-            </tr>
-            <!-- end param template -->
+          <tbody id="param-rows">
           </tbody>
         </table>
         <!-- probably make this a template as well, per GET/POST/etc -->
@@ -39,7 +29,10 @@
           <section class="request-headers">
             <h4>Headers</h4>
             <!-- this can be static for now, just make it correct -->
-            <pre class="headers">Accept: application/json&#x000A;Content-Type: application/json&#x000A;Host: example.org&#x000A;Cookie: &#x000A;</pre>
+            <pre class="headers">Accept: application/json
+Content-Type: application/json
+Host: example.or
+Cookie: </pre>
           </section>
           <section class="route">
             <h4>Route</h4>

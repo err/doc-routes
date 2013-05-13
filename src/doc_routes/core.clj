@@ -5,11 +5,29 @@
         [clojure.pprint :only (pprint)])
   (:require [net.cgrand.enlive-html :as enlive]))
 
-;; Need ../resources, since the root is ./src
+;; For template/snippets we need ../resources, since the root is ./src
+
+;; TODO - using ids as selectors isn't a good idea for rows that we're going
+;; to duplicate in the final html.
+(enlive/defsnippet param-row "../resources/template_param_row.html" [:#param-row]
+  [param]
+  [:#param-name] (enlive/content param)
+  [:#param-desc] (enlive/content (str param " description")))
+
 (enlive/deftemplate doc-page "../resources/template.html"
   [route-map]
-  [:pre#route] (enlive/content (str (:method route-map) " "
-                                    (:route route-map))))
+  [:#route] (enlive/content (str (:method route-map) " "
+                                    (:route route-map)))
+  [:#service-name] (enlive/content (:service-name route-map))
+  [:#service-desc] (enlive/content (:service-desc route-map))
+  [:#param-rows] (enlive/html-content (->>
+                                        route-map
+                                        :params
+                                        (map str)
+                                        (map param-row)
+                                        (map enlive/emit*)
+                                        flatten
+                                        (reduce str))))
 
 (defn make-doc-page
   "doc me"
@@ -17,9 +35,13 @@
   ;; (let [{:keys [method route params doc body]} route-map])
   (prn [:route-map route-maps])
 
-  ;; For testing, just use the first item in the map to create some basic 
-  ;; doc pages, then work on creating doc pages w/ multiple routes
-  (let [route-map (nth route-maps 0)
+  (let [;; A few properties we need to capture, but aren't sure how to get yet,
+        ;; so just mocking them up.
+        props-we-need {:service-name "Get Reviews"
+                       :service-desc "Get the reviews of a property."}
+        ;; For testing, just use the first item in the map to create some basic 
+        ;; doc pages, then work on creating doc pages w/ multiple routes
+        route-map (merge (nth route-maps 0) props-we-need)
         filename (.replace (:route route-map) "/" "-")
         filename (str "output/" filename ".html")
         doc-page-str (reduce str (doc-page route-map))]
@@ -86,10 +108,10 @@
 
 
 ;; Sample
-;;(doc-routes app 
-;;            (GET "/foo/bar" [id foo bar] {:body "Foobar!"})
-;;            (GET "/foo/baz" [id foo baz] {:body "Foobaz!"})
-;;            (POST "/foo/baz" [id foo baz] {:body "Foobaz!"}))
+(doc-routes app 
+            (GET "/foo/bar" [id foo bar] {:body "Foobar!"})
+            (GET "/foo/baz" [id foo baz] {:body "Foobaz!"})
+            (POST "/foo/baz" [id foo baz] {:body "Foobaz!"}))
 
 
 ;;; docstring parsing 
