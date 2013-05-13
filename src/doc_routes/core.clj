@@ -9,25 +9,31 @@
 
 ;; TODO - using ids as selectors isn't a good idea for rows that we're going
 ;; to duplicate in the final html.
+;; TODO - host for curl should be externalized.
 (enlive/defsnippet param-row "../resources/template_param_row.html" [:#param-row]
-  [param]
-  [:#param-name] (enlive/content param)
-  [:#param-desc] (enlive/content (str param " description")))
+  [[param-name param-desc :as param]]
+  [:#param-name] (enlive/content (str param-name))
+  [:#param-desc] (enlive/content (str param-desc)))
 
 (enlive/deftemplate doc-page "../resources/template.html"
-  [route-map]
-  [:#route] (enlive/content (str (:method route-map) " "
-                                    (:route route-map)))
-  [:#service-name] (enlive/content (:service-name route-map))
-  [:#service-desc] (enlive/content (:service-desc route-map))
+  [{:keys [method route doc]}]
+  [:#route] (enlive/content (str method " " route))
+  [:#service-name] (enlive/content (:service-name doc))
+  [:#service-desc] (enlive/content (:does doc))
+  [:#request-body] (enlive/content (:request-body doc))
+  ;Will fail unless you've got the route from the sample.
+  ;[:#response-body] (enlive/content (slurp (str "http://localhost:2000"
+  ;                                              route "?" (:curl doc))))
+  [:#curl] (enlive/content (str "curl http://<host>" route "?" (:curl doc)))
   [:#param-rows] (enlive/html-content (->>
-                                        route-map
-                                        :params
-                                        (map str)
+                                        doc
+                                        :args
+                                        seq
                                         (map param-row)
                                         (map enlive/emit*)
                                         flatten
                                         (reduce str))))
+
 
 (defn make-doc-page
   "doc me"
@@ -35,13 +41,9 @@
   ;; (let [{:keys [method route params doc body]} route-map])
   (prn [:route-map route-maps])
 
-  (let [;; A few properties we need to capture, but aren't sure how to get yet,
-        ;; so just mocking them up.
-        props-we-need {:service-name "Get Reviews"
-                       :service-desc "Get the reviews of a property."}
-        ;; For testing, just use the first item in the map to create some basic 
+  (let [;; For testing, just use the first item in the map to create some basic 
         ;; doc pages, then work on creating doc pages w/ multiple routes
-        route-map (merge (nth route-maps 0) props-we-need)
+        route-map (nth route-maps 0)
         filename (.replace (:route route-map) "/" "-")
         filename (str "output/" filename ".html")
         doc-page-str (reduce str (doc-page route-map))]
@@ -107,13 +109,26 @@
    `(def ~name (routes ~@routes))))
 
 
-;; Sample
+;; Sample -- include a few globals, not sure where these will come from.
 (defn -main
   [& args]
   (doc-routes app 
-              (GET "/foo/bar" [id foo bar] {:body "Foobar!"})
-              (GET "/foo/baz" [id foo baz] {:body "Foobaz!"})
-              (POST "/foo/baz" [id foo baz] {:body "Foobaz!"})))
+              (GET "/v1/reviews" 
+                   [product-id date limit offset access-key] 
+                   {:service-name "Get Reviews"
+                    :does "Gets all the reviews of a property/listing."
+                    :args {"property-id" "the stable property/listing id"
+                           "date"        "if specified, reviews within
+                                         one day of the start date are
+                                         returned (MMddyy format)"
+                           "limit"       "the number of reviews to return, 
+                                         defaults to 1000"
+                           "offset"      "only reviews after the offset are
+                                         returned"
+                           "access-key"  "your api key assigned by Rentpath"}
+                    :request-body ""
+                    :curl  "property-id=999&date=01012012&access-key=test"}
+                   {:body "Foobar!"})))
 
 
 ;;; docstring parsing 
