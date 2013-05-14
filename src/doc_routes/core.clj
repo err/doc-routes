@@ -12,8 +12,14 @@
 ;; to duplicate in the final html.
 ;; TODO - host for curl should be externalized.
 (enlive/defsnippet param-row "../resources/template_param_row.html" [:#param-row]
-  [[param-name param-desc :as param]]
-  [:#param-name] (enlive/content (str param-name))
+  [[param-name param-desc required :as param]]
+  [:#param-name] (enlive/content (if required 
+                                   (str param-name "*")
+                                   (str param-name)))
+  ;; TODO - rather than using bootstrap "text-error" css class in the case of
+  ;; a required param, we should probably either find a better suited bootstrap
+  ;; class, or write our own.
+  [:#param-name] (enlive/add-class (if required "text-error" "muted"))
   [:#param-desc] (enlive/content (str param-desc)))
 
 (enlive/deftemplate doc-page "../resources/template.html"
@@ -125,15 +131,17 @@
                    [product-id date limit offset access-key] 
                    {:service-name "Get Reviews"
                     :does "Gets all the reviews of a property/listing."
-                    :args {"property-id" "the stable property/listing id"
-                           "date"        "if specified, reviews within
-                                         one day of the start date are
-                                         returned (MMddyy format)"
-                           "limit"       "the number of reviews to return, 
-                                         defaults to 1000"
-                           "offset"      "only reviews after the offset are
-                                         returned"
-                           "access-key"  "your api key assigned by Rentpath"}
+                    :args [["property-id" "the stable property/listing id"
+                            :required]
+                           ["date"        "if specified, reviews within
+                                          one day of the start date are
+                                          returned (MMddyy format)"]
+                           ["limit"       "the number of reviews to return, 
+                                          defaults to 1000"]
+                           ["offset"      "only reviews after the offset are
+                                          returned"]
+                           ["access-key"  "your api key assigned by Rentpath"
+                            :required]]
                     :request-body ""
                     :curl  "property-id=999&date=01012012&access-key=test"}
                    {:body "Foobar!"})))
