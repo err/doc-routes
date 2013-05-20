@@ -52,13 +52,13 @@
         route-map (nth route-maps 0)
 
         ;; Will fail unless you've got the route from the sample.
-        ;test-url (str "http://localhost:2000" (:route route-map) "?" 
-        ;              (-> route-map :doc :curl))
-        ;test-response (client/get test-url)
-        ;route-map (merge route-map {:response-body (:body test-response)
-        ;                            :response-status (:status test-response)})
+        test-url (str "http://localhost:2000" (:route route-map) "?" 
+                      (-> route-map :doc :curl))
+        test-response (client/get test-url)
+        route-map (merge route-map {:response-body (:body test-response)
+                                    :response-status (:status test-response)})
 
-        filename (.replace (:route route-map) "/" "-")
+        filename (.replace (:route route-map) "/" "0")
         filename (str "output/" filename ".html")
         doc-page-str (reduce str (doc-page route-map))]
     (spit filename doc-page-str))
@@ -128,22 +128,24 @@
   [& args]
   (doc-routes app 
               (GET "/v1/reviews" 
-                   [product-id date limit offset access-key] 
+                   [product-id date limit offset access-key-id] 
                    {:service-name "Get Reviews"
-                    :does "Gets all the reviews of a property/listing."
+                    :does "Gets reviews of a property/listing."
                     :args [["property-id" "the stable property/listing id"
                             :required]
                            ["date"        "if specified, reviews within
                                           one day of the start date are
                                           returned (MMddyy format)"]
-                           ["limit"       "the number of reviews to return, 
+                           ["limit"       "the number of reviews to return,
                                           defaults to 1000"]
-                           ["offset"      "only reviews after the offset are
-                                          returned"]
-                           ["access-key"  "your api key assigned by Rentpath"
+                           ["offset"      "indicates which review should be used
+                                          as the start"]
+                           ["access-key-id"  "your public api key assigned by Rentpath"
+                            :required]
+                           ["signature"   "the hmac signature of your request"
                             :required]]
                     :request-body ""
-                    :curl  "property-id=999&date=01012012&access-key=test"}
+                    :curl  "property-id=999&date=01012012&access-key-id=test&signature=test"}
                    {:body "Foobar!"})))
 
 

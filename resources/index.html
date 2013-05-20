@@ -1,0 +1,182 @@
+<html>
+  <head>
+    <title>Rentpath API Reference</title>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+<div class="container">
+<div class="row">
+<div class="span12">
+<h1>Rentpath Property and Reviews REST API Resources</h1>
+<p>
+    This is the reference document for the Rentpath Property and Reviews REST
+API. The REST API is for developers who want to:
+</p>
+<ul>
+<li>integrate reviews with other applications</li>
+<li>create scripts that interact with reviews</li>
+</ul>
+
+<h2 id="gettingstarted">Getting started</h2>
+<p>
+    Because the REST API is based on open standards, you can use any web
+development language or command line tool capable of generating an HTTP request
+to access the API. 
+</p>
+<h2>
+<a name="StructureoftheRESTURIs"></a>Structure of the REST URIs</h2>
+<p>
+Rentpath's REST APIs provide access to resources (data entities) via URI paths
+To use a REST API, your application will make an HTTP request and parse the
+response. The Rentpath REST API uses JSON as its communication format, and the
+standard HTTP methods like GET, PUT, POST and DELETE. URIs for Rentpath's REST
+API resource have the following structure:
+</p>
+<pre>
+    http://host:port/context/version/path/to/resource?p1=v1&p2=v2...
+</pre>
+<p>
+For example, the following URI would retrieve reviews for January 1, 2013 for 
+property 999.
+</p>
+<pre>
+    https://api.reviews.apartmentguide.com/v1/reviews?property-id=999&date=01012013
+</pre>
+<p>
+See the API descriptions below for a full list of available resources.
+</p>
+<h2 id="paging-params">Coming Soon: Paged APIs</h2>
+<p>
+    In the future the Rentpath API will use paging to conserve server resources
+and limit response size for resources that return potentially large collections
+of items. 
+</p>
+<h2 id="authentication">Authentication</h2>
+<p>
+Each request to the Rentpath API will contain two parameters used for
+authentication. These parameters will be added to the querystring of every
+request.
+</p>
+<p>
+<ul>
+<li>access-key-id - the public access key id assigned to you by Rentpath</li>
+<li>signature - the hmac signature you create for the request</li>
+</ul>
+</p>
+<p>
+<h4>The process for authentication</h4>
+<ol>
+<li>You construct a request to the Rentpath API.</li>
+<li>You calculate an HMAC-SHA signature using your secret access key (assigned
+to you by Rentpath for api access). For more information, see
+<a href="http://www.faqs.org/rfcs/rfc2104.html">
+http://www.faqs.org/rfcs/rfc2104.html</a>.</li>
+<li>You include the access-key-id and signature parameters in your request uri.
+</li>
+</ol>
+</p>
+<p>
+<h4>Testing</h4>
+For testing, simply include access-key-id and signature parameters with values
+of "test". The sample above including authentication parameters for testing:
+<pre>
+    https://api.reviews.apartmentguide.com/v1/reviews?property-id=999&date=01012013&access-key-id=test&signature=test
+</pre>
+</p>
+<h2 id="errors-and-validation">Errors &amp; Validation</h2>
+<p>
+    If a request fails due to client error, the resource will return an HTTP
+response code in the 40x range. These can be broadly categorised into:
+</p>
+<table class="table table-striped">
+<tr>
+<th>HTTP Code</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>400 (Bad Request)</td>
+<td>
+One or more of the required parameters or attributes:
+<ul>
+<li>were missing from the request;</li>
+<li>incorrectly formatted; or</li>
+<li>inappropriate in the given context.</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>401 (Unauthorized)</td>
+<td>
+Either:
+<ul>
+<li>Authentication is required but was not attempted.</li>
+<li>Authentication was attempted but failed.</li>
+<li>Authentication was successful but the authenticated user does not have the
+requisite permission for the resource.</li>
+</ul>
+See the individual resource documentation for details of required permissions.
+</td>
+</tr>
+<tr>
+<td>403 (Forbidden)</td>
+<td>
+Actions are usually "forbidden" if they involve breaching the licensed user
+limit of the server, or degrading the authenticated user's permission level.
+See the individual resource documentation for more details.
+</td>
+</tr>
+<tr>
+<td>404 (Not Found)</td>
+<td>
+The entity you are attempting to access, or the project or repository containing
+it, does not exist.
+</td>
+</tr>
+<tr>
+<td>405 (Method Not Allowed)</td>
+<td>
+The request HTTP method is not appropriate for the targeted resource. For
+example an HTTP GET to a resource that only accepts an HTTP POST will result
+in a 405.
+</td>
+</tr>
+</table>
+<p>
+    For <strong>40x</strong> HTTP codes the response will typically contain one
+or more validation error messages,
+    for example:
+</p>
+<pre>
+    {
+        "errors": [
+            {
+                "context": "name",
+                "message": "The name should be between 1 and 255 characters.",
+                "exceptionName": null
+            },
+            {
+                "context": "email",
+                "message": "The email should be a valid email address.",
+                "exceptionName": null
+            }
+        ]
+    }
+</pre>
+<p>
+    The <code>context</code> attribute indicates which parameter or request
+entity attribute failed validation. Note that the <code>context</code> may be
+null.
+</p>
+<p>
+    A <strong>500</strong> (Server Error) HTTP code indicates an incorrect
+resource url or an unexpected server error. Double-check the URL you are
+trying to access, then report the issue to a Rentpath API developer. 
+</p>
+</div>
+</div>
+</div>
+<div class="container" id="api-ref">
+</div>
+  </body>
+</html>
