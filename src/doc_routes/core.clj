@@ -7,23 +7,24 @@
             [clj-http.client :as client]))
 
 ;; For template/snippets we need ../resources, since the root is ./src
-
 ;; TODO - using ids as selectors isn't a good idea for rows that we're going
 ;; to duplicate in the final html.
 ;; TODO - host for curl should be externalized.
-(enlive/defsnippet param-row "../resources/template_param_row.html" [:#param-row]
+(enlive/defsnippet param-row "docroutes_template_param_row.html" [:#param-row]
   [[param-name param-desc required :as param]]
-  [:#param-name] (enlive/content (if required 
+  [:#param-name] (enlive/content (if required
                                    (str param-name "*")
                                    (str param-name)))
+
   ;; TODO - rather than using bootstrap "text-error" css class in the case of
   ;; a required param, we should probably either find a better suited bootstrap
   ;; class, or write our own.
   [:#param-name] (enlive/add-class (if required "text-error" "muted"))
   [:#param-desc] (enlive/content (str param-desc)))
 
-(enlive/deftemplate doc-page "../resources/template.html"
+(enlive/defsnippet verb-doc "docroutes_template_route_verb.html" [:#verb-snippet]
   [{:keys [method route response-body response-status doc]}]
+  [:#verb-anchor] (enlive/set-attr :name method)
   [:#route] (enlive/content (str method " " route))
   [:#service-name] (enlive/content (:service-name doc))
   [:#service-desc] (enlive/content (:does doc))
@@ -38,8 +39,25 @@
                                         (map param-row)
                                         (map enlive/emit*)
                                         flatten
-                                        (reduce str))))
+                                        (apply str))))
 
+(enlive/deftemplate doc-page "docroutes_template_route.html"
+  [route-maps]
+  [:#header-col] (enlive/html-content
+                  (str "<ul>"
+                       (apply str
+                              (map #(str "<li>"
+                                            "<a href=\"#" (:method %) "\" >"
+                                               (:method %)
+                                            "</a>"
+                                         "</li>")
+                                   route-maps))
+                       "</ul>"))
+  [:#verb-col] (enlive/html-content (->> route-maps
+                                         (map verb-doc)
+                                         (map enlive/emit*)
+                                         flatten
+                                         (apply str))))
 
 (defn make-doc-page
   "doc me"
@@ -47,20 +65,20 @@
   ;; (let [{:keys [method route params doc body]} route-map])
   (prn [:route-map route-maps])
 
-  (let [;; For testing, just use the first item in the map to create some basic 
-        ;; doc pages, then work on creating doc pages w/ multiple routes
-        route-map (nth route-maps 0)
-
+  (let [;;; cURLing
         ;; Will fail unless you've got the route from the sample.
-        test-url (str "http://localhost:2000" (:route route-map) "?" 
-                      (-> route-map :doc :curl))
-        test-response (client/get test-url)
-        route-map (merge route-map {:response-body (:body test-response)
-                                    :response-status (:status test-response)})
-
-        filename (.replace (:route route-map) "/" "0")
-        filename (str "output/" filename ".html")
-        doc-page-str (reduce str (doc-page route-map))]
+        ;; test-url (str "http://localhost:2000" (:route route-map) "?"
+        ;;               (-> route-map :doc :curl))
+        ;; test-response "" ; TODO: working on incorporation of this for next phase... (client/get test-url)
+        ;; route-map (merge route-map {:response-body (:body test-response)
+        ;;                             :response-status (:status
+        ;;                             test-response)})
+        _ (prn (first route-maps))
+        route-name (subs (:route (first route-maps)) 1)
+        filename (.replace route-name "/" "_")
+        filename (str "doc/docroutes/" filename ".html")
+        doc-page-str (reduce str (doc-page route-maps))]
+    ;; (prn "filename=" filename)
     (spit filename doc-page-str))
 
   :foo)
@@ -124,32 +142,32 @@
 
 
 ;; Sample -- include a few globals, not sure where these will come from.
-(defn -main
-  [& args]
-  (doc-routes app 
-              (GET "/v1/reviews" 
-                   [product-id date limit offset access-key-id] 
-                   {:service-name "Get Reviews"
-                    :does "Gets reviews of a property/listing."
-                    :args [["property-id" "the stable property/listing id"
-                            :required]
-                           ["date"        "if specified, reviews within
-                                          one day of the start date are
-                                          returned (MMddyy format)"]
-                           ["limit"       "the number of reviews to return,
-                                          defaults to 1000"]
-                           ["offset"      "indicates which review should be used
-                                          as the start"]
-                           ["access-key-id"  "your public api key assigned by Rentpath"
-                            :required]
-                           ["signature"   "the hmac signature of your request"
-                            :required]]
-                    :request-body ""
-                    :curl  "property-id=999&date=01012012&access-key-id=test&signature=test"}
-                   {:body "Foobar!"})))
+; (defn -main
+;   [& args]
+;   (doc-routes app
+;               (GET "/v1/reviews"
+;                    [product-id date limit offset access-key-id]
+;                    {:service-name "Get Reviews"
+;                     :does "Gets reviews of a property/listing."
+;                     :args [["property-id" "the stable property/listing id"
+;                             :required]
+;                            ["date"        "if specified, reviews within
+;                                           one day of the start date are
+;                                           returned (MMddyy format)"]
+;                            ["limit"       "the number of reviews to return,
+;                                           defaults to 1000"]
+;                            ["offset"      "indicates which review should be used
+;                                           as the start"]
+;                            ["access-key-id"  "your public api key assigned by Rentpath"
+;                             :required]
+;                            ["signature"   "the hmac signature of your request"
+;                             :required]]
+;                     :request-body ""
+;                     :curl  "property-id=999&date=01012012&access-key-id=test&signature=test"}
+;                    {:body "Foobar!"})))
 
 
-;;; docstring parsing 
+;;; docstring parsing
 ;; :args (re-find #"(?s) \(args[^\)]*\)" docstr)
 ;; :curl (re-find #"(?s) \(curl[^\)]*\)" docstr)
 ;; :test (re-find #"(?s) \(test[^\)]*\)" docstr)
